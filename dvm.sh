@@ -8,29 +8,27 @@ DART_ARCHIVE_URI=http://storage.googleapis.com/dart-archive
 
 # bootstrap a new dart environment. 
 dvm_bootstrap() {
-	dvm_check 'curl'
 	dvm_check 'gcutil' 
 
 	mkdir -p ${DVM_ROOT}/channels/stable/release/latest/sdk ${DVM_ROOT}/channels/dev/release/latest/sdk
 	gsutil cp gs://dart-archive/channels/stable/release/latest/VERSION ${DVM_ROOT}/channels/stable/release/latest/
 
-	set -f              # turn off globbing
-	IFS=$'\n'               # split at newlines only
+	set -f # turn off globbing
+	IFS=$'\n' # split at newlines only
 	output=($(gsutil cat gs://dart-archive/channels/stable/release/latest/VERSION | python -c 'import json,sys;o=json.load(sys.stdin);print o["version"];print o["revision"];'))
 	unset IFS
 	set +f
 
 	echo "Bootstrapping with Version (${output[0]}) Revision (${output[1]})"
 
-	#gs://dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip
-	#gs://dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip.md5sum
-
-	local dartsdk_zip_file="${DART_ARCHIVE_URI}/channels/stable/release/latest/sdk/dartsdk-${SYSTEM}-release.zip"
+	local dart_sdk_zip_file_name="dartsdk-${SYSTEM}-release.zip"
+	local dartsdk_zip_file_path="gs://dart-archive/channels/stable/release/latest/sdk/${dart_sdk_zip_file_name}"
 	
+	# TODO: check md5sum file
 	pushd ${DVM_ROOT}/channels/stable/release/latest/sdk
 	if (
-	        curl --progress-bar $dartsdk_zip_file -o "dartsdk-${SYSTEM}-release.zip" && \
-	        unzip "dartsdk-${SYSTEM}-release.zip"
+	        gsutil cp $dartsdk_zip_file_path $dart_sdk_zip_file_name && \
+	        unzip $dart_sdk_zip_file_name
 	    )
 	then
 	    echo "dvm: install ${output[0]} successfully!"
