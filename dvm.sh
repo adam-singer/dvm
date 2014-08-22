@@ -9,7 +9,7 @@ DART_ARCHIVE_URI=http://storage.googleapis.com/dart-archive
 DVM_GS_CHANNELS_URI=gs://dart-archive/channels
 DVM_VERSION_CACHE=${DVM_ROOT}/version_cache
 DVM_LOCAL_CHANNELS_PATH=${DVM_ROOT}/channels
-DVM_CHANNELS="stable dev"
+DVM_CHANNELS="stable"
 
 # bootstrap a new dart environment. 
 dvm_bootstrap() {
@@ -90,6 +90,46 @@ dvm_check() {
 dvm_sync() {
     mkdir -p ${DVM_ROOT}/version_cache
     dvm_build_version_cache
+}
+
+dvm_build_version_markdown() {
+    echo "# Dart revisions to versions links for macos" > ${DVM_ROOT}/VERSIONS.md
+    echo "" >> ${DVM_ROOT}/VERSIONS.md
+    for CHANNEL in $DVM_CHANNELS; do
+        #echo gsutil ls ${DVM_GS_CHANNELS_URI}/${CHANNEL}/release/*/VERSION
+        local VERSION_URLS=$(gsutil ls ${DVM_GS_CHANNELS_URI}/${CHANNEL}/release/*/VERSION)
+        echo "## ${CHANNEL}" >> ${DVM_ROOT}/VERSIONS.md
+        echo "" >> ${DVM_ROOT}/VERSIONS.md
+        for VERSION in $VERSION_URLS; do             
+            local VERSION_JSON=$(gsutil cat $VERSION)
+            set -f # turn off globbing
+            IFS=$'\n' # split at newlines only
+            local output=($(echo $VERSION_JSON | python -c 'import json,sys;o=json.load(sys.stdin);print o["version"];print o["revision"];print o["date"];'))
+            unset IFS
+            set +f            
+            echo "### ${output[0]} ${output[1]} ${output[2]}" >> ${DVM_ROOT}/VERSIONS.md
+            echo "" >> ${DVM_ROOT}/VERSIONS.md
+
+            # TODO(adam): need to build the urls for all operating systems. 
+
+            local editor=$(dvm_build_editor_path ${CHANNEL} ${output[1]})
+            local sdk=$(dvm_build_sdk_path ${CHANNEL} ${output[1]})
+            local dartium=$(dvm_build_dartium_path ${CHANNEL} ${output[1]}) 
+            local contentshell=$(dvm_build_content_shell_path ${CHANNEL} ${output[1]})
+            local chromedriver=$(dvm_build_chromedriver_path ${CHANNEL} ${output[1]})
+
+            echo "[editor](${editor}) " >> ${DVM_ROOT}/VERSIONS.md
+            echo "[dart-sdk](${sdk}) " >> ${DVM_ROOT}/VERSIONS.md
+            echo "[dartium](${dartium})" >> ${DVM_ROOT}/VERSIONS.md
+            echo "[content-shell](${contentshell})" >> ${DVM_ROOT}/VERSIONS.md
+            echo "[chrome-driver](${chromedriver})" >> ${DVM_ROOT}/VERSIONS.md
+            echo "" >> ${DVM_ROOT}/VERSIONS.md
+            echo "" >> ${DVM_ROOT}/VERSIONS.md
+
+            # Replace gs:// with the http uri
+            sed -i '' 's/gs:\/\//http:\/\/storage.googleapis.com\//g' VERSIONS.md
+        done
+    done
 }
 
 dvm_build_version_cache() {
