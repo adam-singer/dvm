@@ -13,7 +13,7 @@ DVM_CHANNELS="stable"
 
 # bootstrap a new dart environment. 
 dvm_bootstrap() {
-	dvm_check 'gcutil' 
+	dvm_check 'gsutil' 
 
 	mkdir -p ${DVM_ROOT}/channels/stable/release/latest/sdk ${DVM_ROOT}/channels/dev/release/latest/sdk
 	gsutil cp gs://dart-archive/channels/stable/release/latest/VERSION ${DVM_ROOT}/channels/stable/release/latest/
@@ -78,9 +78,9 @@ dvm_check() {
 
             echo "${os}-${arch}"
             ;;
-        "gcutil")
-			if [ ! `which curl` ]; then
-				echo "DVM Needs gcutil to proceed." >&2;
+        "gsutil")
+			if [ ! `which gsutil` ]; then
+				echo "DVM Needs gsutil to proceed." >&2;
 				exit
 			fi
 			;;
