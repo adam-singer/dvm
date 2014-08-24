@@ -9,7 +9,7 @@ DART_ARCHIVE_URI=http://storage.googleapis.com/dart-archive
 DVM_GS_CHANNELS_URI=gs://dart-archive/channels
 DVM_VERSION_CACHE=${DVM_ROOT}/version_cache
 DVM_LOCAL_CHANNELS_PATH=${DVM_ROOT}/channels
-DVM_CHANNELS="stable"
+DVM_CHANNELS="dev stable"
 
 # bootstrap a new dart environment. 
 dvm_bootstrap() {
