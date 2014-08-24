@@ -360,7 +360,7 @@ dvm() {
             echo "    dvm help                    Show this message"
             echo "    dvm version                 Show the dvm version"
             echo "    dvm bootstrap               Bootstrap dvm"
-            echo "    svm sync                    Update the local cache of available versions"
+            echo "    dvm sync                    Update the local cache of available versions"
             echo
             ;;
         "version" | "--version" | "-v" )
